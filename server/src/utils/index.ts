@@ -22,3 +22,5 @@ export const SOCKET_EVENTS = {
         JOINED: 'room:joined',
     }
 };
+
+export const GetTimeStamp = () => new Date().toLocaleTimeString();

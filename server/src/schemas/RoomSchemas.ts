@@ -16,6 +16,7 @@ export const JoinRoomSchema = Joi.object({
 
 export const RoomSchema = Joi.object({
     name: Joi.string().required(),
+    id: Joi.string().required(),
     createdAt: Joi.date().required(),
     clientCount: Joi.number().required(),
     clients: Joi.array().items(ClientSchema).required(),

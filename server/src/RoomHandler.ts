@@ -2,6 +2,7 @@ import { Socket } from "socket.io";
 import { Room } from "./domain/Room";
 import { Logger } from "./middlewares/Logger";
 import { JoinRoomDTO, RoomConfigurationDTO, RoomDTO } from "./interfaces/RoomSchemas";
+import { v4 as uuidv4 } from "uuid";
 
 export class RoomHandler {
   private readonly _rooms: Map<string, Room> = new Map();
@@ -10,34 +11,36 @@ export class RoomHandler {
 
   public async JoinRoom(client: Socket, data: JoinRoomDTO): Promise<Room> {
     return new Promise((resolve, reject) => {
-        const room = this._rooms.get(data.roomID);
-    
-        if (!room) {
-            return reject("Room not found");
-        }
-    
-        if (room.password && room.password !== data.password) {
-            return reject("Invalid password");
-        }
-    
-        if (!room.IsUsernameAvailable(data.playerName)) {
-            return reject("Username already taken");
-        }
+      console.log(this._rooms)
+      const room = this._rooms.get(data.roomID);
 
-        room.AddClient(client, data.playerName);
-        resolve(room);
+      if (!room) {
+        return reject("Room not found");
+      }
+
+      if (room.password && room.password !== data.password) {
+        return reject("Invalid password");
+      }
+
+      if (!room.IsUsernameAvailable(data.playerName)) {
+        return reject("Username already taken");
+      }
+
+      room.AddClient(client, data.playerName);
+      resolve(room);
     });
   }
 
   public CreateRoom(data: RoomConfigurationDTO): Promise<Room> {
     return new Promise((resolve, reject) => {
-        if (this._rooms.has(data.name)) {
-            return reject("Room already exists");
-        }
+      const id = uuidv4();
+      if (this._rooms.has(id)) {
+        reject("Room already exists");
+      }
 
-        const room = new Room(data.name, data.language, data.victoryThreshold, data.password);
-        this._rooms.set(data.name, room);
-        resolve(room);
+      const room = new Room(id, data.name, data.language, data.victoryThreshold, data.password);
+      this._rooms.set(id, room);
+      resolve(room);
     });
   }
 

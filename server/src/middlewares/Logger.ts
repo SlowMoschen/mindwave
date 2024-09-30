@@ -1,4 +1,5 @@
 import { appendFile, readFile, stat, writeFile } from "fs/promises";
+import { GetTimeStamp } from "../utils";
 
 const LOG_LEVELS_COLORS = {
   error: "\x1b[31m",
@@ -33,37 +34,37 @@ export class Logger {
   }
 
   public static error(message: string): void {
-    console.log(Logger.ColorString("error", message));
+    console.log(Logger.FormatLogMessage("error", message));
   }
 
   public static warn(message: string): void {
-    console.log(Logger.ColorString("warn", message));
+    console.log(Logger.FormatLogMessage("warn", message));
   }
 
   public static info(message: string): void {
-    console.log(Logger.ColorString("info", message));
+    console.log(Logger.FormatLogMessage("info", message));
   }
 
   public static debug(message: string): void {
-    console.log(Logger.ColorString("debug", message));
+    console.log(Logger.FormatLogMessage("debug", message));
   }
 
   public static logHttp(message: string): void {
-    console.log(Logger.ColorString("info", message));
+    console.log(Logger.FormatLogMessage("info", message));
     if (process.env.NODE_ENV === "development") return;
 
     Logger.RecordHttpToCSV(message);
   }
 
   public static logSocketEvent(message: string): void {
-    console.log(Logger.ColorString("info", message));
+    console.log(Logger.FormatLogMessage("info", message));
     if (process.env.NODE_ENV === "development") return;
 
     Logger.RecordWsToCSV(message);
   }
 
-  private static ColorString(LogLevel: LogLevel, message: string): string {
-    return `${LOG_LEVELS_COLORS[LogLevel]}[${LOG_LEVELS_PREFIX[LogLevel]}] ${message}\x1b[0m`;
+  private static FormatLogMessage(LogLevel: LogLevel, message: string): string {
+    return `${LOG_LEVELS_COLORS[LogLevel]}[${GetTimeStamp()} - ${LOG_LEVELS_PREFIX[LogLevel]}] ${message}\x1b[0m`;
   }
 
   /**

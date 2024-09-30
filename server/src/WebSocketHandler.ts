@@ -54,11 +54,11 @@ export class WebSocketHandler {
       const validationError = ValidateSchemaWS(RoomConfigurationSchema, roomData);
       if (validationError) return client.emit(SOCKET_EVENTS.ERRORS.INVALID_DATA, validationError.message);
 
-      await this.RoomHandler.CreateRoom(roomData);
+      const room = await this.RoomHandler.CreateRoom(roomData);
 
-      Logger.info(`WS - Room created: ${roomData.name}`);
+      Logger.info(`WS - Room created: ${room.name} - ${room.id} - by ${client.id}`);
 
-      client.emit(SOCKET_EVENTS.ROOM_EVENTS.CREATED, roomData);
+      client.emit(SOCKET_EVENTS.ROOM_EVENTS.CREATED, room.ConvertToPublicObject());
     } catch (error) {
       Logger.error(`WS - Error creating room: ${error}`);
       client.emit(SOCKET_EVENTS.ERRORS.INTERNAL, error);
@@ -71,9 +71,9 @@ export class WebSocketHandler {
       if (validationError) return client.emit(SOCKET_EVENTS.ERRORS.INVALID_DATA, validationError.message);
 
       const room = await this.RoomHandler.JoinRoom(client, data);
-      client.join(room.name);
+      client.join(room.id);
       
-      Logger.info(`WS - ${client.id} joined room: ${room.name}`);
+      Logger.info(`WS - ${client.id} joined room: ${room.name} - ${room.id}`);
       
       client.emit(SOCKET_EVENTS.ROOM_EVENTS.JOINED, room.ConvertToPublicObject());
     } catch (error) {

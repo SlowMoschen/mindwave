@@ -5,8 +5,6 @@
 
 import { ClientDTO } from '.';
 
-export type RoomLanguage = 'en' | 'de';
-
 export interface JoinRoomDTO {
   password?: string;
   playerName: string;
@@ -14,7 +12,7 @@ export interface JoinRoomDTO {
 }
 
 export interface RoomConfigurationDTO {
-  language: RoomLanguage;
+  language: 'en' | 'de';
   name: string;
   password?: string;
   victoryThreshold: number;
@@ -25,7 +23,8 @@ export interface RoomDTO {
   clients: ClientDTO[];
   createdAt: Date;
   hasPassword: boolean;
-  language: RoomLanguage;
+  id: string;
+  language: 'en' | 'de';
   name: string;
   victoryThreshold: number;
 }

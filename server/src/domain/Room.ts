@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { RoomDTO, RoomLanguage } from "../interfaces";
+import { RoomDTO } from "../interfaces";
 
 export class Room {
   public name: string;
@@ -13,10 +13,12 @@ export class Room {
   > = new Map();
   private _clientCount: number = this._clientCollection.size;
   public password?: string;
-  public language: RoomLanguage;
+  public language: "en" | "de";
   public victoryThreshold: number;
+  public id: string;
 
-  constructor(name: string, language: RoomLanguage, winCondition: number, password?: string) {
+  constructor(id: string, name: string, language: "en" | "de", winCondition: number, password?: string) {
+    this.id = id;
     this.name = name;
     this.createdAt = new Date();
     this.password = password;
@@ -26,12 +28,12 @@ export class Room {
 
   public AddClient(client: Socket, name: string) {
     this._clientCollection.set(client.id, { name, client });
-    this._clientCount = this._clientCollection.size;
+    this.UpdateClientCount();
   }
 
   public RemoveClient(client: Socket) {
     this._clientCollection.delete(client.id);
-    this._clientCount = this._clientCollection.size;
+    this.UpdateClientCount();
   }
 
   public NotifyAll(message: string) {
@@ -46,6 +48,7 @@ export class Room {
 
   public ConvertToPublicObject(): RoomDTO {
     return {
+      id: this.id,
       name: this.name,
       createdAt: this.createdAt,
       clientCount: this._clientCount,
@@ -57,6 +60,10 @@ export class Room {
       victoryThreshold: this.victoryThreshold,
       language: this.language,
     };
+  }
+
+  private UpdateClientCount() {
+    this._clientCount = this._clientCollection.size;
   }
 
   get clients() {

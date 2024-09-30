@@ -4,11 +4,37 @@ import { useEffect, useState } from "react";
 
 const socket = io("http://localhost:3000", { autoConnect: false });
 
+const SOCKET_EVENTS = {
+  CONNECTION: 'connection',
+  DISCONNECT: 'disconnect',
+  ERRORS: {
+      INTERNAL: 'internal_error',
+      INVALID_DATA: 'invalid_data',
+      INVALID_ROOM: 'invalid_room',
+      INVALID_PASSWORD: 'invalid_password',
+  },
+  MESSAGE: 'message',
+  GAME_EVENTS: {
+      START: 'game:start',
+      END: 'game:end',
+      NEXT: 'game:next',
+      READY: 'game:ready',
+  },
+  ROOM_EVENTS: {
+      CREATE: 'room:create',
+      JOIN: 'room:join',
+      LEAVE: 'room:leave',
+      CREATED: 'room:created',
+      JOINED: 'room:joined',
+  }
+};
+
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [clients, setClients] = useState([]);
   const [currentRoom, setCurrentRoom] = useState<{
     name: string;
+    id: string;
     createdAt: Date;
     clientCount: number;
     clients: {
@@ -50,7 +76,12 @@ function App() {
     });
 
     socket.on("invalid_data", (error) => {
-      console.error("Invalid data", error);
+      console.error("Invalid data:", error);
+    });
+
+    socket.on(SOCKET_EVENTS.ROOM_EVENTS.CREATED, (room) => {
+      console.log("Room created", room);
+      socket.emit(SOCKET_EVENTS.ROOM_EVENTS.JOIN, { roomID: room.id, playerName: "Test" });
     });
 
     return () => {
@@ -80,12 +111,15 @@ function App() {
     const formData = new FormData(e.currentTarget);
     const body = {
       name: formData.get("roomName") as string,
-      password: formData.get("password") ?? undefined,
+      password:
+        (formData.get("password") as string) === ""
+          ? undefined
+          : (formData.get("password") as string),
       victoryThreshold: formData.get("victoryThreshold") as unknown as number,
       language: formData.get("language") as string,
     };
 
-    socket.emit("room:create", body);
+    socket.emit(SOCKET_EVENTS.ROOM_EVENTS.CREATE, body);
     e.currentTarget.reset();
   };
 
@@ -150,45 +184,6 @@ function App() {
         </select>
         <button type="submit">Create Room</button>
       </form>
-
-      <div>
-        <h1>Rooms</h1>
-        <ul>
-          {rooms.map((room: any) => {
-            const isInRoom = room.clients.includes(socket.id);
-            if (isInRoom) return;
-
-            return (
-              <li key={room.name}>
-                <h2>{room.name}</h2>
-                <p>Created at: {room.createdAt}</p>
-                <p>Client count: {room.clientCount}</p>
-                <div>
-                  <ul>
-                    {room.clients.map((client: any) => (
-                      <li key={client}>{client}</li>
-                    ))}
-                  </ul>
-                </div>
-                <li
-                  onClick={() => handleRoomJoin(room.name)}
-                >
-                  Join Room
-                </li>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <div>
-        <h1>Room Clients</h1>
-        <ul>
-          {roomClients.map((client: any) => (
-            <li key={client}>{client}</li>
-          ))}
-        </ul>
-      </div>
     </>
   );
 }
