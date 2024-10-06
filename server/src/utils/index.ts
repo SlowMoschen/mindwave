@@ -2,10 +2,10 @@ export const SOCKET_EVENTS = {
     CONNECTION: 'connection',
     DISCONNECT: 'disconnect',
     ERRORS: {
-        INTERNAL: 'internal_error',
-        INVALID_DATA: 'invalid_data',
-        INVALID_ROOM: 'invalid_room',
-        INVALID_PASSWORD: 'invalid_password',
+        500: 'internal_error',
+        404: 'not_found',
+        401: 'unauthorized',
+        400: 'bad_request',
     },
     MESSAGE: 'message',
     GAME_EVENTS: {
@@ -24,3 +24,18 @@ export const SOCKET_EVENTS = {
 };
 
 export const GetTimeStamp = () => new Date().toLocaleTimeString();
+
+export const ERROR_CODES = {
+    INTERNAL: 500,
+    NOT_FOUND: 404,
+    UNAUTHORIZED: 401,
+    BAD_REQUEST: 400,
+};
+
+export class CustomError extends Error {
+    public code: number;
+    public constructor(code: number, message: string) {
+        super(message);
+        this.code = code;
+    }
+}

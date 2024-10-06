@@ -11,7 +11,7 @@ export class ConnectionsController extends ControllerBase {
 
   protected initializeRoutes(): void {
     this.router.get("/", this.GET_AllConnections.bind(this));
-    this.router.get("/:id", this.GTE_SingleConnection.bind(this));
+    this.router.get("/:id", this.GET_SingleConnection.bind(this));
   }
 
   private GET_AllConnections(_: Request, res: Response): void {
@@ -25,7 +25,7 @@ export class ConnectionsController extends ControllerBase {
     res.json(clients);
   }
 
-  private GTE_SingleConnection({ params }: Request, res: Response): void {
+  private GET_SingleConnection({ params }: Request, res: Response): void {
     const client = SocketHandler.clientList.find((client) => client.id === params?.id);
 
     if (!client) {

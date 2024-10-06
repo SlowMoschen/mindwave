@@ -3,6 +3,7 @@ import { Room } from "./domain/Room";
 import { Logger } from "./middlewares/Logger";
 import { JoinRoomDTO, RoomConfigurationDTO, RoomDTO } from "./interfaces/RoomSchemas";
 import { v4 as uuidv4 } from "uuid";
+import { CustomError, ERROR_CODES } from "./utils";
 
 export class RoomHandler {
   private readonly _rooms: Map<string, Room> = new Map();
@@ -11,19 +12,19 @@ export class RoomHandler {
 
   public async JoinRoom(client: Socket, data: JoinRoomDTO): Promise<Room> {
     return new Promise((resolve, reject) => {
-      console.log(this._rooms)
+      console.log(this._rooms);
       const room = this._rooms.get(data.roomID);
 
       if (!room) {
-        return reject("Room not found");
+        return reject(new CustomError(ERROR_CODES.NOT_FOUND, "Room not found"));
       }
 
       if (room.password && room.password !== data.password) {
-        return reject("Invalid password");
+        return reject(new CustomError(ERROR_CODES.UNAUTHORIZED, "Invalid password"));
       }
 
       if (!room.IsUsernameAvailable(data.playerName)) {
-        return reject("Username already taken");
+        return reject(new CustomError(ERROR_CODES.BAD_REQUEST, "Username already taken"));
       }
 
       room.AddClient(client, data.playerName);
@@ -33,9 +34,10 @@ export class RoomHandler {
 
   public CreateRoom(data: RoomConfigurationDTO): Promise<Room> {
     return new Promise((resolve, reject) => {
-      const id = uuidv4();
-      if (this._rooms.has(id)) {
-        reject("Room already exists");
+      let id = uuidv4();
+
+      while (this._rooms.has(id)) {
+        id = uuidv4();
       }
 
       const room = new Room(id, data.name, data.language, data.victoryThreshold, data.password);
